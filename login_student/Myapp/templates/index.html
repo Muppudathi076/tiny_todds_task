@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+
+</head>
+<body>
+    <div class='container'>
+        <div class='card'>
+            <form method="POST">
+                {% csrf_token %}
+                <div class='login'>
+                    <div class='login_heading'>
+                        <h2>login</h2>
+                    </div>
+                    <div class="box">
+                        <input type='text' name="username" placeholder='Enter the username'>
+                        <input type='password' name="password" placeholder='Enter the password'>
+                    </div>
+                    <div class="button">
+                        <button type='submit'>submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
