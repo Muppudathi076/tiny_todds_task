@@ -2,9 +2,9 @@ from rest_framework.decorators import api_view,permission_classes,authentication
 from rest_framework import status
 from rest_framework.response import Response
 from django.db.models import Count
-from .serializers import RegisterSerializer,LoginSerializer,StudentSerializer,StaffSerializer
+from .serializers import RegisterSerializer,LoginSerializer,StudentSerializer,StaffSerializer,RoleSerializer
 from django.db.models.functions import TruncMonth
-from .models import student,Login,Staff
+from .models import student,Login,Staff,Role
 from .jwt_utils import generate_custom_access_token
 
 @api_view(['POST'])
@@ -32,6 +32,7 @@ def login_view(request):
             "access": access_token,
             "name": user.Name,
             "admin_name": user.Admin_name,
+            "role": user.role,
         }, status=200)
 
     return Response(serializer.errors, status=400)
@@ -136,7 +137,8 @@ def Staff_list(request):
 def Staff_details(request,id):
     try:
         staffs = Staff.objects.get(id=id)
-    except student.DoesNotExist:
+        print("staffs",staffs)
+    except Staff.DoesNotExist:
         return Response({"error":"Not Found"},status=404)
     
     if request.method == 'GET':
@@ -144,13 +146,63 @@ def Staff_details(request,id):
             return Response(serializer.data, status=200)
     
     if request.method == 'PUT':
-        serializer = StaffSerializer(staffs, data=request.data)
+        serializer = StaffSerializer(staffs, data=request.data,partial=True)
+        print("serializer data",serializer)
         if serializer.is_valid():
             serializer.save()
             return Response({"message":"Updated success","data":serializer.data},status=200)
+        return Response(serializer.errors, status=400)
         
     if request.method == 'DELETE':
         staffs.delete()
+        return Response({"message":"Delete successfully"},status=200)
+    
+@api_view(['GET','POST'])
+@authentication_classes([])
+@permission_classes([])
+def Role_list(request):
+    if request.method == "GET":
+        roles = Role.objects.all()
+        serializer = RoleSerializer(roles, many=True)
+        return Response(serializer.data,status=200)
+    
+    if request.method == "POST":
+        role_name = request.data.get("role")
+        if Role.objects.filter(role__iexact = role_name).exists():            
+            return Response(
+                {"message": "This role already exists"},
+                status=400
+            )
+        serializers = RoleSerializer(data= request.data)
+        if serializers.is_valid():
+            serializers.save()
+            return Response({"message":"created success","data":serializers.data},status=200)
+        return Response(serializers.errors,status=400)
+    
+@api_view(['GET','PUT','DELETE'])
+@authentication_classes([])
+def Role_details(request,id):
+    try:
+        roles = Role.objects.get(id=id)
+    except Role.DoesNotExist:
+        return Response({"error":"Not Found"},status=404)
+    
+    if request.method == 'GET':
+            serializer = RoleSerializer(roles)
+            return Response(serializer.data, status=200)
+    
+    if request.method == 'PUT':
+        serializer = RoleSerializer(roles, data=request.data,partial=True)
+        print("serializer data",serializer)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message":"Updated success","data":serializer.data},status=200)
+        return Response(serializer.errors, status=400)
+        
+    if request.method == 'DELETE':
+        if Staff.objects.filter(role__iexact=roles.role).exists():
+            return Response({"message":"This role already assigned to staff. Cannot delete."},status=400)
+        roles.delete()
         return Response({"message":"Delete successfully"},status=200)
 
 @api_view(['GET'])  

@@ -7,6 +7,7 @@ import UserProfile from "./Page/UserProfile"
 import { Toaster } from "react-hot-toast"
 import Staff from "./Page/Staff"
 import Dashboard from "./Page/Dashboard"
+import RolePage from "./Page/RolePage"
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="students" element={<StudentView />} /> 
           <Route path="staff" element={<Staff/>} /> 
           <Route path="profile" element={<UserProfile />} />
+          <Route path="rolepage" element={<RolePage />} />
         </Route>
     </Routes>
     </>

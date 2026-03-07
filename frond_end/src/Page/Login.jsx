@@ -24,10 +24,19 @@ function Login(){
         }
         try{
             const response = await loginApi(email,password) 
+            console.log("role:",response.role)
+            if (response.role === "admin") {
             navigate('/api/dashboard')
+            } else if (response.role === "super_admin") {
+            navigate('/api/')
+            } else if (response.role === "student") {
+            navigate('/api/dashboard')
+            }
+            // navigate('/api/')
             localStorage.setItem("access_token",response.access)
             localStorage.setItem("user",response.name)
             localStorage.setItem("email",response.admin_name)
+            localStorage.setItem("role", response.role)
             toast.success("login success",{duration:2000})
             setMessage("Login successfull")
 

@@ -10,12 +10,11 @@ import ReusableTable from "../Components/Resubale_Components/ReusableTable";
 import { Pencil,Trash2,X } from "lucide-react";
 import ReusablePagination from "../Components/Resubale_Components/ReusablePagination";
 import toast from "react-hot-toast"
-import { StaffDeleteApi,StaffGetByIdApi, StaffEditApi, StaffGetApi, StaffPostApi } from "../auth/authapi";
+import { StaffDeleteApi,StaffGetByIdApi, StaffEditApi, StaffGetApi, StaffPostApi, RoleGetApi } from "../auth/authapi";
 import { useNavigate } from "react-router-dom";
 import ReusableForm from "../Components/Resubale_Components/ReusableForm";
 
 function Staff (){
-    const navigate = useNavigate()
     const [currentPage, setCurrentPage] = useState(1)
     const [selectedStaff, setSelectedStaff] = useState(null)
     const [openModal, setOpenModal] = useState(false)
@@ -23,6 +22,8 @@ function Staff (){
     const [isEdit, setIsEdit] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [deleteId, setDeleteId] = useState(null)
+    const [currentDatas, setCurrentData] = useState([])
+    const [roles, setRoles] = useState([]);
     const [newStaff, setNewStaff] = useState({
         full_name: "",
         email: "",
@@ -37,17 +38,7 @@ function Staff (){
         status: true,
 
     })
-        const staffFields = [
-        { label: "Full Name", name: "full_name" },
-        { label: "Email", name: "email", type: "email" },
-        { label: "Address", name: "address"},
-        { label: "Phone", name: "phone" },
-        { label: "Date of Birth", name: "date_of_birth"},
-        { label: "Join Date", name: "join_date"},
-        { label: "Qualification", name: "qualification" },
-        { label: "Experience", name: "experience" },
-        { label: "Salary", name: "salary" },
-    ]
+
     function formatLabel(key) {
     return key
         .replace(/_/g, " ")
@@ -56,14 +47,144 @@ function Staff (){
     }
     const itemsPerPage = 5
     const [staffData, setStaffData] = useState([])
-    const columns = [
-    { header: "Name", accessor: "full_name" },
-    { header: "Email", accessor: "email" },
-    { header: "Phone No", accessor: "phone" },
-    { header: "Role", accessor: "role" },
-// 
-]
+    const role = localStorage.getItem("role")
+const handleToggle = async(id, field, currentValue) => {
+  const updatedValue = !currentValue
 
+  // setCurrentData(prev =>
+  //   prev.map(item =>
+  //     item.id === id
+  //       ? { ...item, [field]: updatedValue }
+  //       : item
+  //   )
+  // )
+  try{
+      await StaffEditApi(id,{ [field]: updatedValue }, token)
+      fetching()
+      toast.success("Updated data successfully",{duration:2000})
+  }catch (error) {
+    console.error(error)
+    toast.error("Update failed")
+
+    // setCurrentData(prev =>
+    //   prev.map(item =>
+    //     item.id === id
+    //       ? { ...item, [field]: currentValue }
+    //       : item
+    //   )
+    // )
+  }
+}
+
+const columns = [
+  { header: "Name", accessor: "full_name" },
+  { header: "Email", accessor: "email" },
+  { header: "Phone No", accessor: "phone" },
+  { header: "Role", accessor: "role" },
+
+  ...(role === "super_admin"
+    ? [
+        {
+          header: "Create",
+          accessor: "create_option",
+          cell: (row) => {
+            const value = row.create_option
+            return (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleToggle(row.id, "create_option", value)
+                }}
+                className={`relative w-16 h-8 flex items-center rounded-full cursor-pointer transition-all duration-300 ${
+                  value ? "bg-green-500" : "bg-red-500"
+                }`}
+              >
+                <span
+                  className={`absolute text-white text-sm font-bold ${
+                    value ? "left-3" : "right-3"
+                  }`}
+                >
+                  {value ? "✓" : "✕"}
+                </span>
+
+                <div
+                  className={`absolute w-7 h-7 bg-white rounded-full shadow-md transform transition-all duration-300 ${
+                    value ? "translate-x-8" : "translate-x-1"
+                  }`}
+                />
+              </div>
+            )
+          }
+        },
+
+        {
+          header: "Edit",
+          accessor: "edit_option",
+          cell: (row) => {
+            const value = row.edit_option
+            return (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleToggle(row.id, "edit_option", value)
+                }}
+                className={`relative w-16 h-8 flex items-center rounded-full cursor-pointer transition-all duration-300 ${
+                  value ? "bg-green-500" : "bg-red-500"
+                }`}
+              >
+                <span
+                  className={`absolute text-white text-sm font-bold ${
+                    value ? "left-3" : "right-3"
+                  }`}
+                >
+                  {value ? "✓" : "✕"}
+                </span>
+
+                <div
+                  className={`absolute w-7 h-7 bg-white rounded-full shadow-md transform transition-all duration-300 ${
+                    value ? "translate-x-8" : "translate-x-1"
+                  }`}
+                />
+              </div>
+            )
+          }
+        },
+
+        {
+          header: "Delete",
+          accessor: "delete_option",
+          cell: (row) => {
+            const value = row.delete_option
+            return (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleToggle(row.id, "delete_option", value)
+                }}
+                className={`relative w-16 h-8 flex items-center rounded-full cursor-pointer transition-all duration-300 ${
+                  value ? "bg-green-500" : "bg-red-500"
+                }`}
+              >
+                <span
+                  className={`absolute text-white text-sm font-bold ${
+                    value ? "left-3" : "right-3"
+                  }`}
+                >
+                  {value ? "✓" : "✕"}
+                </span>
+
+                <div
+                  className={`absolute w-7 h-7 bg-white rounded-full shadow-md transform transition-all duration-300 ${
+                    value ? "translate-x-8" : "translate-x-1"
+                  }`}
+                />
+              </div>
+            )
+          }
+        }
+      ]
+    : [])
+]
     const indexOfLast = currentPage * itemsPerPage
     const indexOfFirst = indexOfLast - itemsPerPage
     const currentData = staffData.slice(indexOfFirst, indexOfLast)
@@ -162,20 +283,33 @@ const close = () => {
 
   setCreateModel(false);
 };
+
+  const fetchRoles = async () => {
+    try {
+      const res = await RoleGetApi(token); 
+      console.log("res data:",res.data)
+      setRoles(res.data); 
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
     useEffect(()=>{
         fetching()
+        fetchRoles()
     },[])
-    return(
-        <div className="min-w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-center sm:items-center">  
-                    <h2 className="text-black font-bold text-xl p-2">Staff Details</h2>
-                <div >
-                    <button onClick={()=>{setCreateModel(true)}} className="bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+return(
+        <div className="min-w-full p-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-3 w-full">  
+                    <h2 className="text-black font-bold text-lg sm:text-xl">Staff Details</h2>
+                <div className="">
+                    <button onClick={()=>{setCreateModel(true)}} 
+                    className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
                         Add Staff
                     </button>
                 </div>
             </div>
-            <div className="p-2">
+            <div className="w-full p-2">
                 <ReusableTable
                     columns={columns}
                     data={currentData}
@@ -199,12 +333,14 @@ const close = () => {
                     </div>
                     )}
                 />
-            <ReusablePagination
-                totalItems={staffData.length}
-                itemsPerPage={itemsPerPage}
-                currentPage={currentPage}
-                onPageChange={setCurrentPage}
-            />
+                <div className="flex justify-center mt-4">
+                    <ReusablePagination
+                        totalItems={staffData.length}
+                        itemsPerPage={itemsPerPage}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                    />
+                </div>
             </div>
             {createModel && (
                 <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40">
@@ -288,14 +424,21 @@ const close = () => {
                                     setNewStaff({...newStaff, join_date:e.target.value})
                                 }}
                                 className="w-full border p-2 mt-3"/>
+                                <select
+                                  value={newStaff.role}
+                                  onChange={(e) =>
+                                    setNewStaff({ ...newStaff, role: e.target.value })
+                                  }
+                                  className="w-full border p-2 mt-3"
+                                >
+                                  <option value="">Select Role</option>
 
-                                <input type="text"                             
-                                value={newStaff.role}
-                                placeholder="Role"
-                                onChange={(e)=>{
-                                    setNewStaff({...newStaff, role:e.target.value})
-                                }}
-                                className="w-full border p-2 mt-3"/>
+                                  {roles.map((role) => (
+                                    <option key={role.id} value={role.role}>
+                                      {role.role}
+                                    </option>
+                                  ))}
+                                </select>
                                 <input type="text"                             
                                 value={newStaff.address}
                                 placeholder="Address"
@@ -374,6 +517,7 @@ const close = () => {
 
         {Object.entries(selectedStaff)
           .filter(([key]) => key !== "id")
+          .filter(([key]) => key !== "view_option")
           .map(([key, value]) => (
             <ReusableForm
               key={key}

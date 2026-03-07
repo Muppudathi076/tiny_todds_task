@@ -62,6 +62,40 @@ export const StudentDeleteApi = async(id,token)=>{
     })
      return response.data
 }
+export const RolePostApi = async(paylod,token)=>{
+    const response = await axiosInstance.post("/roles/",paylod,{
+        headers:{
+            Authorization:`Bearer ${token}`
+        }
+    })
+     return response.data
+}
+
+export const RoleGetApi = async(token)=>{
+    const response = await axiosInstance.get("/roles/",{
+        headers:{
+            Authorization:`Bearer ${token}`
+        }   
+    })
+    return response
+}
+
+export const RoleEditApi = async(id,updatedData, token)=>{
+    const response = await axiosInstance.put(`/roles/${id}`,updatedData,{
+            headers:{
+            Authorization:`Bearer ${token}`
+        }
+    })
+     return response.data
+}
+export const RoleDeleteApi = async(id,token)=>{
+    const response = await axiosInstance.delete(`/roles/${id}`,{
+            headers:{
+            Authorization:`Bearer ${token}`
+        }
+    })
+     return response.data
+}
 
 export const StaffPostApi = async(data,token)=>{
         const response = await axiosInstance.post("/staffs/",data,{
